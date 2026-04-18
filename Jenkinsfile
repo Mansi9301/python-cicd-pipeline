@@ -10,6 +10,7 @@ pipeline {
 
         stage('Set up Python') {
             steps {
+                sh 'apt-get update && apt-get install -y python3 python3-pip python3-venv'
                 sh 'python3 -m venv venv'
                 sh '. venv/bin/activate && pip install -r requirements.txt'
             }
@@ -22,13 +23,13 @@ pipeline {
         }
 
         stage('Snyk Security Scan') {
-            steps {
-                sh 'pip install snyk'
-                sh 'snyk auth $SNYK_TOKEN'
-                sh 'snyk test --severity-threshold=high'
-            }
             environment {
                 SNYK_TOKEN = credentials('snyk-token')
+            }
+            steps {
+                sh '. venv/bin/activate && pip install snyk'
+                sh '. venv/bin/activate && snyk auth $SNYK_TOKEN'
+                sh '. venv/bin/activate && snyk test --severity-threshold=high'
             }
         }
     }
